@@ -20,4 +20,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DirectoryScanner.Application\DirectoryScanner.Application.csproj" />
+  </ItemGroup>
+
 </Project>
