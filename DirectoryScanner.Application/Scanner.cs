@@ -6,27 +6,30 @@ using System.Linq;
 using System.Threading.Tasks;
 using DirectoryScanner.Application.Interfaces;
 using DirectoryScanner.Application.Models;
+using DirectoryScanner.Application.Services;
 
 namespace DirectoryScanner.Application
 {
     public class Scanner : IScanner
     {
-        private readonly object sync = new object();
-        private const int waitingTime = 50;
-        private Stopwatch stopwatch = new Stopwatch();
-        private Tree _tree;
-        private SemaphoreSlim _semaphore;
         private ConcurrentQueue<Node> _queue = new ConcurrentQueue<Node>();
+        private TreeTraverseService _treeTraverseService;
+
+        public Scanner(TreeTraverseService treeTraverseService)
+        {
+            _treeTraverseService = treeTraverseService;
+        }
+
         public Tree StartScanning(string pathToDirectory, int threadsCount)
         {
-            _semaphore = new SemaphoreSlim(threadsCount, threadsCount);
+            var semaphore = new SemaphoreSlim(threadsCount, threadsCount);
             if (!Directory.Exists(pathToDirectory))
             {
                 throw new Exception("Path does not exist");
             }
 
-            _tree = new Tree(pathToDirectory, null);
-            Scan(_tree.Root);
+            var tree = new Tree(pathToDirectory, null);
+            Scan(tree.Root);
             do
             {
                 for (int i = 0; i < _queue.Count; i++)
@@ -35,15 +38,19 @@ namespace DirectoryScanner.Application
                     var dequeueSuccess = _queue.TryDequeue(out node);
                     if (dequeueSuccess)
                     {
-                        _semaphore.Wait();
+                        semaphore.Wait();
                         Task.Run(() => {
                             Scan(node);
-                            _semaphore.Release();
+                            semaphore.Release();
                         });
                     }
                 }
-            } while (!_queue.IsEmpty || _semaphore.CurrentCount != threadsCount);
-            return _tree;
+            } while (!_queue.IsEmpty || semaphore.CurrentCount != threadsCount);
+            _treeTraverseService.Traverse(tree, (node) => {
+                if (node.Parent != null)
+                node.Parent.Directory.Size += node.Directory.Size;
+            });
+            return tree;
         }
 
         private void Scan(Node node)

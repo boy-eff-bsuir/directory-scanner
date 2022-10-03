@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using DirectoryScanner.Application;
+using DirectoryScanner.Application.Services;
 using Xunit;
 
 namespace DirectoryScanner.Tests;
@@ -14,11 +15,11 @@ public class UnitTest1
         long bestTime = 10000000;
         long bestThreadsCount = 0;
         var directory = @"D:\";
-        Scanner sut;
+        var service = new TreeTraverseService();
+        Scanner sut = new Scanner(service);
         var watch = new Stopwatch();
         for (int i = 50; i <= 400; i +=50)
         {
-            sut = new Scanner();
             watch.Start();
             sut.StartScanning(directory, i);
             watch.Stop();
