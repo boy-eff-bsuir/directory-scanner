@@ -10,6 +10,6 @@ public class UnitTest1
     public void Test1()
     {
         var sut = new Scanner();
-        sut.StartScanning(@"C:\Users\Asus\Desktop\5 семестр\МОптим");
+        sut.StartScanning(@"D:\");
     }
 }

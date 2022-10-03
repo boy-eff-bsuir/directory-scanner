@@ -10,8 +10,10 @@ namespace DirectoryScanner.Application
 {
     public class Scanner : IScanner
     {
+        private readonly object sync = new object();
+        private static int waitingTime = 100;
         private Tree _tree;
-        private const int _threadCount = 10;
+        private const int _threadCount = 100;
         private SemaphoreSlim _semaphore = new SemaphoreSlim(_threadCount, _threadCount);
         private ConcurrentQueue<Node> _queue = new ConcurrentQueue<Node>();
         public Tree StartScanning(string pathToDirectory)
@@ -23,41 +25,65 @@ namespace DirectoryScanner.Application
 
             _tree = new Tree(pathToDirectory);
             ScanRecursive(_tree.Root);
-            Node node;
             do
             {
+                Node node;
                 var dequeueSuccess = _queue.TryDequeue(out node);
-                _semaphore.Wait();
-                if (dequeueSuccess)
+                if (dequeueSuccess && node != null)
                 {
+                    _semaphore.Wait();
                     Task.Run(() => {
                         ScanRecursive(node);
                         _semaphore.Release();
+                        lock (sync)
+                        {
+                            Monitor.Pulse(sync);
+                        }
                     });
                 }
-
-                Thread.Sleep(1000);
+                if (_queue.IsEmpty)
+                {
+                    var waitingResult = true;
+                    while (waitingResult)
+                    {
+                        lock (sync)
+                        {
+                            waitingResult = Monitor.Wait(sync, waitingTime);
+                        }
+                    }
+                }
             } while (!_queue.IsEmpty);
             return _tree;
         }
 
         private void ScanRecursive(Node node)
         {
-            var directoryInfo = new DirectoryInfo(node.Directory.FullPath);
-            var directories = directoryInfo.GetDirectories();
-            foreach(var directory in directories)
+            try
             {
-                var childNode = new Node(directory.FullName);
-                node.Children.Add(childNode);
-                _queue.Enqueue(childNode);
+                DirectoryInfo directoryInfo;
+                DirectoryInfo[] directories;
+                var path = node.Directory.FullPath;
+                directoryInfo = new DirectoryInfo(path);
+                directories = directoryInfo.GetDirectories();
+                foreach(var directory in directories)
+                {
+                    var childNode = new Node(directory.FullName);
+                    node.Children.Add(childNode);
+                    _queue.Enqueue(childNode);
+                }
+                var files = directoryInfo.GetFiles();
+                foreach (var file in files)
+                {
+                    node.Directory.Files.Add(new FileModel(file.Name, file.Length));
+                    node.Directory.Size += file.Length;
+                }
             }
-
-            var files = directoryInfo.GetFiles();
-            foreach (var file in files)
+            catch(Exception ex)
             {
-                node.Directory.Files.Add(new FileModel(file.Name, file.Length));
-                node.Directory.Size += file.Length;
+                System.Console.WriteLine(ex.Message);
+                return;
             }
+                
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,6 @@ namespace DirectoryScanner.Application.Models
         }
 
         public DirectoryModel Directory { get; }
-        public List<Node> Children { get; set; } = new List<Node>();
+        public ConcurrentBag<Node> Children { get; set; } = new ConcurrentBag<Node>();
     }
 }
