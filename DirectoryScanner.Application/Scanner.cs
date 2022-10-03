@@ -26,7 +26,7 @@ namespace DirectoryScanner.Application
             }
 
             _tree = new Tree(pathToDirectory, null);
-            ScanRecursive(_tree.Root);
+            Scan(_tree.Root);
             do
             {
                 for (int i = 0; i < _queue.Count; i++)
@@ -37,7 +37,7 @@ namespace DirectoryScanner.Application
                     {
                         _semaphore.Wait();
                         Task.Run(() => {
-                            ScanRecursive(node);
+                            Scan(node);
                             _semaphore.Release();
                         });
                     }
@@ -46,25 +46,7 @@ namespace DirectoryScanner.Application
             return _tree;
         }
 
-        public Tree StartScanningInOneThread(string pathToDirectory)
-        {
-            if (!Directory.Exists(pathToDirectory))
-            {
-                throw new Exception("Path does not exist");
-            }
-
-            _tree = new Tree(pathToDirectory, null);
-            ScanRecursive(_tree.Root);
-            Node node;
-            do
-            {
-                var dequeueSuccess = _queue.TryDequeue(out node);
-                ScanRecursive(node);
-            } while (!_queue.IsEmpty);
-            return _tree;
-        }
-
-        private void ScanRecursive(Node node)
+        private void Scan(Node node)
         {
             try
             {

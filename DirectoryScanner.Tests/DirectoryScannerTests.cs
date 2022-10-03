@@ -30,12 +30,6 @@ public class UnitTest1
             }
             watch.Reset();
         }
-        sut = new Scanner();
-        watch.Start();
-        sut.StartScanningInOneThread(directory);
-        watch.Stop();
-        Console.WriteLine($"Execution Time in one thread: {watch.ElapsedMilliseconds} ms.");
-        watch.Reset();
         System.Console.WriteLine($@"Best execution time for directory {directory} is {bestTime} with {bestThreadsCount} threads");
     }
 }
