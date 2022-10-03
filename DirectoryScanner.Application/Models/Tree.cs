@@ -12,9 +12,9 @@ namespace DirectoryScanner.Application.Models
             this.Root = root;
         }
 
-        public Tree(string directoryPath) 
+        public Tree(string directoryPath, Node parent) 
         {
-            this.Root = new Node(directoryPath);
+            this.Root = new Node(directoryPath, parent);
         }
 
         public Node Root { get; }

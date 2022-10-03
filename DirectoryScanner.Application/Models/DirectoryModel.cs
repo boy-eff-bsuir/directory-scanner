@@ -14,6 +14,6 @@ namespace DirectoryScanner.Application.Models
         }
         public string FullPath { get; }
         public long Size { get; internal set; }
-        public ConcurrentBag<FileModel> Files { get; } = new ConcurrentBag<FileModel>();
+        public List<FileModel> Files { get; } = new List<FileModel>();
     }
 }

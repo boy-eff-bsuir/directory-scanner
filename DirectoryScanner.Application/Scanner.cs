@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DirectoryScanner.Application.Interfaces;
@@ -11,47 +12,54 @@ namespace DirectoryScanner.Application
     public class Scanner : IScanner
     {
         private readonly object sync = new object();
-        private static int waitingTime = 100;
+        private const int waitingTime = 50;
+        private Stopwatch stopwatch = new Stopwatch();
         private Tree _tree;
-        private const int _threadCount = 100;
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(_threadCount, _threadCount);
+        private SemaphoreSlim _semaphore;
         private ConcurrentQueue<Node> _queue = new ConcurrentQueue<Node>();
-        public Tree StartScanning(string pathToDirectory)
+        public Tree StartScanning(string pathToDirectory, int threadsCount)
+        {
+            _semaphore = new SemaphoreSlim(threadsCount, threadsCount);
+            if (!Directory.Exists(pathToDirectory))
+            {
+                throw new Exception("Path does not exist");
+            }
+
+            _tree = new Tree(pathToDirectory, null);
+            ScanRecursive(_tree.Root);
+            do
+            {
+                for (int i = 0; i < _queue.Count; i++)
+                {
+                    Node node;
+                    var dequeueSuccess = _queue.TryDequeue(out node);
+                    if (dequeueSuccess)
+                    {
+                        _semaphore.Wait();
+                        Task.Run(() => {
+                            ScanRecursive(node);
+                            _semaphore.Release();
+                        });
+                    }
+                }
+            } while (!_queue.IsEmpty || _semaphore.CurrentCount != threadsCount);
+            return _tree;
+        }
+
+        public Tree StartScanningInOneThread(string pathToDirectory)
         {
             if (!Directory.Exists(pathToDirectory))
             {
                 throw new Exception("Path does not exist");
             }
 
-            _tree = new Tree(pathToDirectory);
+            _tree = new Tree(pathToDirectory, null);
             ScanRecursive(_tree.Root);
+            Node node;
             do
             {
-                Node node;
                 var dequeueSuccess = _queue.TryDequeue(out node);
-                if (dequeueSuccess && node != null)
-                {
-                    _semaphore.Wait();
-                    Task.Run(() => {
-                        ScanRecursive(node);
-                        _semaphore.Release();
-                        lock (sync)
-                        {
-                            Monitor.Pulse(sync);
-                        }
-                    });
-                }
-                if (_queue.IsEmpty)
-                {
-                    var waitingResult = true;
-                    while (waitingResult)
-                    {
-                        lock (sync)
-                        {
-                            waitingResult = Monitor.Wait(sync, waitingTime);
-                        }
-                    }
-                }
+                ScanRecursive(node);
             } while (!_queue.IsEmpty);
             return _tree;
         }
@@ -65,12 +73,14 @@ namespace DirectoryScanner.Application
                 var path = node.Directory.FullPath;
                 directoryInfo = new DirectoryInfo(path);
                 directories = directoryInfo.GetDirectories();
+                
                 foreach(var directory in directories)
                 {
-                    var childNode = new Node(directory.FullName);
+                    var childNode = new Node(directory.FullName, node);
                     node.Children.Add(childNode);
                     _queue.Enqueue(childNode);
                 }
+
                 var files = directoryInfo.GetFiles();
                 foreach (var file in files)
                 {
@@ -82,8 +92,7 @@ namespace DirectoryScanner.Application
             {
                 System.Console.WriteLine(ex.Message);
                 return;
-            }
-                
+            }     
         }
     }
 }

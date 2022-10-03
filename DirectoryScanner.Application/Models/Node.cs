@@ -13,12 +13,14 @@ namespace DirectoryScanner.Application.Models
             this.Directory = directory;
         }
 
-        public Node(string directoryFullPath) 
+        public Node(string directoryFullPath, Node parent) 
         {
             this.Directory = new DirectoryModel(directoryFullPath);
+            this.Parent = parent;
         }
 
         public DirectoryModel Directory { get; }
-        public ConcurrentBag<Node> Children { get; set; } = new ConcurrentBag<Node>();
+        public List<Node> Children { get; set; } = new List<Node>();
+        public Node Parent { get; }
     }
 }
