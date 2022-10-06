@@ -8,6 +8,7 @@ namespace DirectoryScanner.Application.Interfaces
 {
     public interface IScanner
     {
-        Tree StartScanningAsync(string name, string path, int threadsCount);
+        Tree StartScanning(string name, string path, int threadsCount);
+        void CancelScanning();
     }
 }

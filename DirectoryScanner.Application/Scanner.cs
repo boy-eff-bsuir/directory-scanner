@@ -13,6 +13,7 @@ namespace DirectoryScanner.Application
     public class Scanner : IScanner
     {
         private ConcurrentQueue<Node> _queue = new ConcurrentQueue<Node>();
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private TreeTraverseService _treeTraverseService;
 
         public Scanner(TreeTraverseService treeTraverseService)
@@ -20,7 +21,12 @@ namespace DirectoryScanner.Application
             _treeTraverseService = treeTraverseService;
         }
 
-        public Tree StartScanningAsync(string name, string path, int threadsCount)
+        public void CancelScanning()
+        {
+            _cancellationTokenSource.Cancel();
+        }
+
+        public Tree StartScanning(string name, string path, int threadsCount)
         {
             var semaphore = new SemaphoreSlim(threadsCount, threadsCount);
             if (!Directory.Exists(path))
@@ -29,7 +35,7 @@ namespace DirectoryScanner.Application
             }
 
             var tree = new Tree(name, path, null);
-            Scan(tree.Root);
+            Scan(tree.Root, _cancellationTokenSource.Token);
             do
             {
                 for (int i = 0; i < _queue.Count; i++)
@@ -40,12 +46,16 @@ namespace DirectoryScanner.Application
                     {
                         semaphore.Wait();
                         Task.Run(() => {
-                            Scan(node);
+                            Scan(node, _cancellationTokenSource.Token);
                             semaphore.Release();
                         });
                     }
                 }
-            } while (!_queue.IsEmpty || semaphore.CurrentCount != threadsCount);
+            } while ((!_queue.IsEmpty 
+                || semaphore.CurrentCount != threadsCount)
+                && !_cancellationTokenSource.IsCancellationRequested
+                );
+                
             _treeTraverseService.PostorderTraverse(tree, (node) => {
                 if (node.Parent != null)
                 node.Parent.Directory.Size += node.Directory.Size;
@@ -53,7 +63,7 @@ namespace DirectoryScanner.Application
             return tree;
         }
 
-        private void Scan(Node node)
+        private void Scan(Node node, CancellationToken token)
         {
             try
             {
@@ -65,6 +75,7 @@ namespace DirectoryScanner.Application
                 
                 foreach(var directory in directories)
                 {
+                    token.ThrowIfCancellationRequested();
                     var childNode = new Node(directory.Name, directory.FullName, node);
                     node.Children.Add(childNode);
                     _queue.Enqueue(childNode);

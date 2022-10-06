@@ -37,6 +37,7 @@
                 </DataTemplate>
             </TreeView.Resources>
         </TreeView>
+        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Height="52" Width="109" Click="btnCancel_Click"/>
 
     </Grid>
 </Window>

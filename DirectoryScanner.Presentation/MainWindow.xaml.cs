@@ -37,12 +37,16 @@ namespace DirectoryScanner.Presentation
                 await Task.Run(() =>
                 {
                     var stopwatch = new Stopwatch();
-                    var result = _scanner.StartScanningAsync(dialog.SelectedPath, dialog.SelectedPath, 150);
+                    var result = _scanner.StartScanning(dialog.SelectedPath, dialog.SelectedPath, 150);
                     directories.Add(result.ToDto());
                 });
                 tvDirectories.ItemsSource = directories;
             }
         }
 
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            _scanner.CancelScanning();
+        }
     }
 }

@@ -22,7 +22,7 @@ public class UnitTest1
         for (int i = 50; i <= 400; i +=50)
         {
             watch.Start();
-            sut.StartScanningAsync(directory, directory, i);
+            sut.StartScanning(directory, directory, i);
             watch.Stop();
             Console.WriteLine($"Execution Time multi-threading: {watch.ElapsedMilliseconds} ms. Threads count - {i}");
             if (watch.ElapsedMilliseconds < bestTime)
