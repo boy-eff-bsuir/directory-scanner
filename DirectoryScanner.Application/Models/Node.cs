@@ -13,9 +13,9 @@ namespace DirectoryScanner.Application.Models
             this.Directory = directory;
         }
 
-        public Node(string directoryFullPath, Node parent) 
+        public Node(string name, string path, Node parent) 
         {
-            this.Directory = new DirectoryModel(directoryFullPath);
+            this.Directory = new DirectoryModel(name, path);
             this.Parent = parent;
         }
 

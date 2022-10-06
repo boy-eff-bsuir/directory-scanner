@@ -20,15 +20,15 @@ namespace DirectoryScanner.Application
             _treeTraverseService = treeTraverseService;
         }
 
-        public Tree StartScanning(string pathToDirectory, int threadsCount)
+        public Tree StartScanningAsync(string name, string path, int threadsCount)
         {
             var semaphore = new SemaphoreSlim(threadsCount, threadsCount);
-            if (!Directory.Exists(pathToDirectory))
+            if (!Directory.Exists(path))
             {
                 throw new Exception("Path does not exist");
             }
 
-            var tree = new Tree(pathToDirectory, null);
+            var tree = new Tree(name, path, null);
             Scan(tree.Root);
             do
             {
@@ -46,7 +46,7 @@ namespace DirectoryScanner.Application
                     }
                 }
             } while (!_queue.IsEmpty || semaphore.CurrentCount != threadsCount);
-            _treeTraverseService.Traverse(tree, (node) => {
+            _treeTraverseService.PostorderTraverse(tree, (node) => {
                 if (node.Parent != null)
                 node.Parent.Directory.Size += node.Directory.Size;
             });
@@ -65,7 +65,7 @@ namespace DirectoryScanner.Application
                 
                 foreach(var directory in directories)
                 {
-                    var childNode = new Node(directory.FullName, node);
+                    var childNode = new Node(directory.Name, directory.FullName, node);
                     node.Children.Add(childNode);
                     _queue.Enqueue(childNode);
                 }

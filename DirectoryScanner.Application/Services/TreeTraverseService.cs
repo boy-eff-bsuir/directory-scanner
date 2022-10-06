@@ -9,16 +9,16 @@ namespace DirectoryScanner.Application.Services
 {
     public class TreeTraverseService
     {
-        public void Traverse(Tree tree, Action<Node> action)
+        public void PostorderTraverse(Tree tree, Action<Node> action)
         {
-            RecursiveTraverse(tree.Root, action);
+            RecursivePostorderTraverse(tree.Root, action);
         }
 
-        private void RecursiveTraverse(Node node, Action<Node> action)
+        private void RecursivePostorderTraverse(Node node, Action<Node> action)
         {
             foreach(var child in node.Children)
             {
-                RecursiveTraverse(child, action);
+                RecursivePostorderTraverse(child, action);
             }
             action.Invoke(node);
         }
