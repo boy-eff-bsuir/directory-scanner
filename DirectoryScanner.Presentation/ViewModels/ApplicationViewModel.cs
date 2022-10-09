@@ -73,7 +73,7 @@ namespace DirectoryScanner.Presentation.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
         protected void Notify(string propName)
         {
             if (this.PropertyChanged != null)

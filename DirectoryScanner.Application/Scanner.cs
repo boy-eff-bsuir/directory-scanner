@@ -13,7 +13,7 @@ namespace DirectoryScanner.Application
     public class Scanner : IScanner
     {
         private ConcurrentQueue<Node> _queue = new ConcurrentQueue<Node>();
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancellationTokenSource;
         private TreeTraverseService _treeTraverseService;
 
         public Scanner(TreeTraverseService treeTraverseService)
@@ -23,12 +23,13 @@ namespace DirectoryScanner.Application
 
         public void CancelScanning()
         {
-            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource?.Cancel();
         }
 
         public Tree StartScanning(string name, string path, int threadsCount)
         {
             var semaphore = new SemaphoreSlim(threadsCount, threadsCount);
+            _cancellationTokenSource = new CancellationTokenSource();
             if (!Directory.Exists(path))
             {
                 throw new Exception("Path does not exist");
