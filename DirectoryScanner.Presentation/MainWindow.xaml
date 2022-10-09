@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DirectoryScanner.Presentation"
-        xmlns:self="clr-namespace:DirectoryScanner.Presentation.Models"
+        xmlns:self="clr-namespace:DirectoryScanner.Presentation.Models" xmlns:viewmodels="clr-namespace:DirectoryScanner.Presentation.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:ApplicationViewModel}"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Button x:Name="btnChooseDirectory" Content="Button" HorizontalAlignment="Left" Margin="47,35,0,0" VerticalAlignment="Top" Height="50" Width="109" Click="Button_Click"/>
-        <TreeView x:Name="tvDirectories" Margin="174,10,10,10">
+        <Button x:Name="btnChooseDirectory" Content="Button" HorizontalAlignment="Left" Margin="47,35,0,0" VerticalAlignment="Top" Height="50" Width="109" Command="{Binding Path=ChangeDirectoryCommand}"/>
+        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Height="52" Width="109" Command="{Binding Path=CancelDirectorySearchCommand}"/>
+        <TreeView x:Name="tvDirectories" Margin="174,10,10,10" ItemsSource="{Binding RootDirectory}">
             <TreeView.Resources>
                 <HierarchicalDataTemplate ItemsSource="{Binding Directories}" DataType="{x:Type self:Directory}">
                     <StackPanel Orientation="Horizontal">
@@ -37,7 +38,6 @@
                 </DataTemplate>
             </TreeView.Resources>
         </TreeView>
-        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Height="52" Width="109" Click="btnCancel_Click"/>
 
     </Grid>
 </Window>
