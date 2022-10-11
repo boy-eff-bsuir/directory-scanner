@@ -52,7 +52,7 @@ namespace DirectoryScanner.Presentation.ViewModels
                         _rootDirectory = new ObservableCollection<IFileSystemObject>();
                         await Task.Run(() =>
                         {
-                            var result = _scanner.StartScanning(dialog.SelectedPath, dialog.SelectedPath, 150);
+                            var result = _scanner.StartScanning(dialog.SelectedPath, 150);
                             RootDirectory = new ObservableCollection<IFileSystemObject>
                             {
                                 result.ToDto()

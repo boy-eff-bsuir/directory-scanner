@@ -26,7 +26,7 @@ namespace DirectoryScanner.Application
             _cancellationTokenSource?.Cancel();
         }
 
-        public Tree StartScanning(string name, string path, int threadsCount)
+        public Tree StartScanning(string path, int threadsCount)
         {
             var semaphore = new SemaphoreSlim(threadsCount, threadsCount);
             _cancellationTokenSource = new CancellationTokenSource();
@@ -35,7 +35,7 @@ namespace DirectoryScanner.Application
                 throw new Exception("Path does not exist");
             }
 
-            var tree = new Tree(name, path, null);
+            var tree = new Tree(new DirectoryInfo(path).Name, path, null);
             Scan(tree.Root, _cancellationTokenSource.Token);
             do
             {
