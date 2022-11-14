@@ -45,7 +45,7 @@ namespace DirectoryScanner.Presentation.ViewModels
         {
             get 
             {
-                return _changeDirectoryCommand ?? (_changeDirectoryCommand = new ChangeDirectoryCommand( (obj) => { return true; }, async obj => {
+                return _changeDirectoryCommand ??= new ChangeDirectoryCommand( (obj) => { return true; }, async obj => {
                     var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
                     if (dialog.ShowDialog().GetValueOrDefault())
                     {
@@ -59,7 +59,7 @@ namespace DirectoryScanner.Presentation.ViewModels
                             };
                         });
                     }
-                }));
+                });
             }
         }
 

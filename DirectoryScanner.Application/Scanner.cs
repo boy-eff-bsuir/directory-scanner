@@ -77,6 +77,11 @@ namespace DirectoryScanner.Application
                 foreach(var directory in directories)
                 {
                     token.ThrowIfCancellationRequested();
+                    if (directory.LinkTarget != null )
+                    {
+                        continue;
+                    }
+
                     var childNode = new Node(directory.Name, directory.FullName, node);
                     node.Children.Add(childNode);
                     _queue.Enqueue(childNode);
@@ -85,6 +90,11 @@ namespace DirectoryScanner.Application
                 var files = directoryInfo.GetFiles();
                 foreach (var file in files)
                 {
+                    if (file.LinkTarget != null)
+                    {
+                        continue;
+                    }
+
                     node.Directory.Files.Add(new FileModel(file.Name, file.Length));
                     node.Directory.Size += file.Length;
                 }

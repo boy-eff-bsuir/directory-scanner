@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Button x:Name="btnChooseDirectory" Content="Button" HorizontalAlignment="Left" Margin="47,35,0,0" VerticalAlignment="Top" Height="50" Width="109" Command="{Binding Path=ChangeDirectoryCommand}"/>
+        <Button x:Name="btnChooseDirectory" Content="Choose Directory" HorizontalAlignment="Left" Margin="47,35,0,0" VerticalAlignment="Top" Height="50" Width="109" Command="{Binding Path=ChangeDirectoryCommand}"/>
         <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Height="52" Width="109" Command="{Binding Path=CancelDirectorySearchCommand}"/>
         <TreeView x:Name="tvDirectories" Margin="174,10,10,10" ItemsSource="{Binding RootDirectory}">
             <TreeView.Resources>
